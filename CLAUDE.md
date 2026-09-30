@@ -27,5 +27,9 @@ Why it exists and every decision behind it: the `web-animation-skills` repo, tic
   `claude plugin marketplace update media-gen` and `claude plugin update media-gen@media-gen`.
   On this machine the marketplace is this folder, and the MCP server then runs straight from the
   repo (`claude mcp list` shows the path): a server edit is live at the next restart, reviewed or not.
-- `claude mcp list` also says whether the server starts (`✔ Connected`). Checked 2026-10-01: it
-  starts with no key set, so the no-key steps in `NO_KEY` do reach the model.
+- `claude mcp list` also says whether the server starts (`✔ Connected`). Checked 2026-10-01 with
+  throwaway installs: the server starts with no key set, so the no-key steps in `NO_KEY` reach the
+  model; it gets the full environment, so `OPENROUTER_API_KEY` works in Claude Code too; and an
+  option never filled in arrives as an empty string.
+- Where the key is kept is the user's choice (plugin settings or `OPENROUTER_API_KEY`); `NO_KEY` and
+  the skill put both in front of them. Other agents only have the environment variable.

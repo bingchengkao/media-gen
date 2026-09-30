@@ -51,8 +51,11 @@ and the first real result tells you the true price.
 ## When it isn't set up
 
 - **No key, or the key is refused**: the tool says what went wrong and gives the setup steps. Walk
-  the user through them in their language, one step at a time if they want. They do every step
-  themselves; never ask them to paste the key into the chat.
+  the user through them in their language, one step at a time if they want. Where to keep the key
+  is their choice, so put both ways in front of them with what each costs: Claude Code's plugin
+  settings (keychain, out of your reach, Claude Code only) or an environment variable (any agent,
+  but a plain-text file). Outside Claude Code, say that only the environment variable works. They do
+  every step themselves; never ask them to paste the key into the chat.
 - **The `media-gen` tools aren't there at all**: the plugin's server didn't start. The usual cause
   is that Node.js (18 or newer) isn't installed; after installing it from nodejs.org, the user
   restarts Claude Code.

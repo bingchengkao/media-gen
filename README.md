@@ -27,22 +27,41 @@ Needs Node 18 or newer on your `PATH`.
    A key on an empty account is refused.
 2. Make a key at <https://openrouter.ai/settings/keys>. Give it a **spend limit** (US$5 is plenty to
    start): if anything goes wrong, it stops there.
-3. Put it in the plugin's settings. Claude Code keeps it in your keychain. Either:
-   - in a terminal Claude Code session: `/plugin configure media-gen@media-gen`, and paste it; or
-   - from any terminal (the desktop app has one built in), with the key copied to your clipboard.
-     On macOS; the key itself never lands in your shell history:
+3. Choose where to keep it:
 
-     ```bash
-     printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin
-     ```
+   | | Plugin settings | Environment variable |
+   |---|---|---|
+   | Where the key lives | your system keychain | a plain-text file, e.g. `~/.zshenv` |
+   | Can the model read it | no | technically yes |
+   | Works in | Claude Code only | any agent that runs the server |
 
-   The same works later to replace the key. At install time, `--config openrouter_api_key="$(pbpaste)"`
-   on `claude plugin install` does it in one go.
-4. Restart Claude Code, or run `/reload-plugins`.
+   **Plugin settings.** In a terminal Claude Code session, `/plugin configure media-gen@media-gen`
+   and paste it. Or from any terminal (the desktop app has one built in), with the key copied to
+   your clipboard, on macOS (the key itself never lands in your shell history):
+
+   ```bash
+   printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin
+   ```
+
+   At install time, `--config openrouter_api_key="$(pbpaste)"` on `claude plugin install` does the
+   same in one go.
+
+   **Environment variable.** Add `export OPENROUTER_API_KEY=...` to the shell profile your agent
+   starts from (`~/.zshenv` on macOS). An app opened from the Dock may not read shell profiles;
+   `launchctl setenv OPENROUTER_API_KEY ...` covers it until the next restart.
+
+   If both are set, the plugin settings win.
+4. Restart your agent (in Claude Code: restart, or `/reload-plugins`).
 
 If you skip this, nothing breaks: the first time Claude tries to generate, the tool refuses, spends
-nothing, and Claude walks you through these steps. An `OPENROUTER_API_KEY` environment variable
-also works, as a fallback.
+nothing, and Claude walks you through these steps, letting you pick between the two.
+
+## Using it with another agent
+
+The server is plain MCP over stdio. Point your agent's MCP settings at
+`node <this repo>/plugins/media-gen/server/index.mjs`, with `OPENROUTER_API_KEY` in its environment.
+`plugins/media-gen/skills/generate/SKILL.md` carries the rules (when to ask, what to report); give
+it to your agent the way it takes instructions.
 
 ## What is inside
 
