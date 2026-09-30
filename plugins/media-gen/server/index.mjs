@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.1.1' };
+const SERVER = { name: 'media-gen', version: '0.1.2' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -39,11 +39,17 @@ const compact = (obj) =>
 
 // ── Key ─────────────────────────────────────────────────────────────────────────────────────────
 
-const NO_KEY =
-  'No OpenRouter API key is set, so nothing was generated and nothing was spent. ' +
-  "The user adds the key in this plugin's settings (Claude Code: /plugin, Installed, media-gen, Configure options). " +
-  'They paste it there themselves; never ask for the key in the chat. ' +
-  'A key made just for this, with a spend limit, is safest: https://openrouter.ai/settings/keys';
+const NO_KEY = [
+  'No OpenRouter API key is set, so nothing was generated and nothing was spent.',
+  'Walk the user through setting one up; they do every step themselves:',
+  '1. Sign in at https://openrouter.ai and add credit at https://openrouter.ai/settings/credits (a key on an empty account is refused).',
+  '2. Make a key just for this at https://openrouter.ai/settings/keys and give it a spend limit, e.g. US$5.',
+  "3. Save it in this plugin's settings. Either in a terminal Claude Code session: /plugin configure media-gen@media-gen.",
+  '   Or from any terminal (the desktop app has one built in), with the key copied to the clipboard, on macOS:',
+  `   printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin`,
+  '4. Restart Claude Code (or run /reload-plugins).',
+  'Never ask for the key in the chat, and do not run these commands for them.',
+].join('\n');
 
 const KEY_VARS = ['MEDIA_GEN_OPENROUTER_API_KEY', 'OPENROUTER_API_KEY'];
 
@@ -78,7 +84,7 @@ function redact(text) {
 
 const STATUS_HINTS = {
   400: "A field or value this model does not accept. Check https://openrouter.ai/<model id>/llms.txt and retry.",
-  401: "The key was refused. The user checks the key in the plugin's settings.",
+  401: "The key was refused. The user replaces it in this plugin's settings (/plugin configure media-gen@media-gen).",
   402: 'The account is out of credit. The user adds credit at https://openrouter.ai/settings/credits.',
   403: 'The key hit its spend limit or is disabled. Raising the limit is the user\'s call.',
   404: 'Unknown model, or no provider can serve this request right now.',

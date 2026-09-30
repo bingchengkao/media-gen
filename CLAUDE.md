@@ -25,3 +25,7 @@ Why it exists and every decision behind it: the `web-animation-skills` repo, tic
 - Installs copy into the plugin cache and `claude plugin update` compares the version string: bump
   `version` in `plugins/media-gen/.claude-plugin/plugin.json` after changes are reviewed, then
   `claude plugin marketplace update media-gen` and `claude plugin update media-gen@media-gen`.
+  On this machine the marketplace is this folder, and the MCP server then runs straight from the
+  repo (`claude mcp list` shows the path): a server edit is live at the next restart, reviewed or not.
+- `claude mcp list` also says whether the server starts (`✔ Connected`). Checked 2026-10-01: it
+  starts with no key set, so the no-key steps in `NO_KEY` do reach the model.

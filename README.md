@@ -23,22 +23,26 @@ Needs Node 18 or newer on your `PATH`.
 
 ## Add your key
 
-1. Make a key at <https://openrouter.ai/settings/keys>. Give it a **spend limit** (US$5 is plenty to
+1. Sign in at <https://openrouter.ai> and add credit at <https://openrouter.ai/settings/credits>.
+   A key on an empty account is refused.
+2. Make a key at <https://openrouter.ai/settings/keys>. Give it a **spend limit** (US$5 is plenty to
    start): if anything goes wrong, it stops there.
-2. Put it in the plugin's settings: in a Claude Code session, `/plugin` → **Installed** →
-   `media-gen` → **Configure options**, and paste it. Claude Code keeps it in your keychain.
+3. Put it in the plugin's settings. Claude Code keeps it in your keychain. Either:
+   - in a terminal Claude Code session: `/plugin configure media-gen@media-gen`, and paste it; or
+   - from any terminal (the desktop app has one built in), with the key copied to your clipboard.
+     On macOS; the key itself never lands in your shell history:
 
-   From a shell instead, with the key on your clipboard (the key itself never lands in your shell
-   history):
+     ```bash
+     printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin
+     ```
 
-   ```bash
-   claude plugin install media-gen@media-gen --config openrouter_api_key="$(pbpaste)"
-   ```
+   The same works later to replace the key. At install time, `--config openrouter_api_key="$(pbpaste)"`
+   on `claude plugin install` does it in one go.
+4. Restart Claude Code, or run `/reload-plugins`.
 
-3. Restart Claude Code, or run `/reload-plugins`.
-
-If the key is missing, the tools say so and spend nothing. An `OPENROUTER_API_KEY` environment
-variable also works, as a fallback.
+If you skip this, nothing breaks: the first time Claude tries to generate, the tool refuses, spends
+nothing, and Claude walks you through these steps. An `OPENROUTER_API_KEY` environment variable
+also works, as a fallback.
 
 ## What is inside
 

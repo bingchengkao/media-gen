@@ -48,7 +48,11 @@ and the first real result tells you the true price.
 - Tell the user, in their language, which model you used and what it cost. The tool reports the
   charge; if it says the charge wasn't reported, say that rather than guess.
 
-## When the key is missing or refused
+## When it isn't set up
 
-The tool says what went wrong; pass it on in plain words. The user adds or changes the key in this
-plugin's settings themselves. Never ask them to paste it into the chat.
+- **No key, or the key is refused**: the tool says what went wrong and gives the setup steps. Walk
+  the user through them in their language, one step at a time if they want. They do every step
+  themselves; never ask them to paste the key into the chat.
+- **The `media-gen` tools aren't there at all**: the plugin's server didn't start. The usual cause
+  is that Node.js (18 or newer) isn't installed; after installing it from nodejs.org, the user
+  restarts Claude Code.
