@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Use when the work would be better with a generated image, piece of music, spoken line or video — a picture to show a direction, a texture or background to build with, a jingle, a narration. Makes it through OpenRouter on the user's own key, so it spends their money. Video only when the user brings it up.
+description: Make images, music, speech and video with today's best models on OpenRouter — Nano Banana, FLUX, Lyria and whatever is newest — saved straight into the project. Use this whenever the work would be better with real media than a placeholder, even if the user never says "generate" — a hero image or background for a page, sprites or textures for a game, a logo direction or mood picture, a jingle or loop for an animation, a voice-over or narration (生圖、畫一張、配樂、做首歌、配音、旁白). It picks the right model for the job, checks every result against the brief and redoes the ones that miss, then says which model it used and what it cost. Spends the user's own OpenRouter credit, so it asks before the first generation. Video only when the user brings it up.
 ---
 
 # Generate
@@ -39,14 +39,34 @@ says to prompt it. Write the prompt the way that model wants it. Token-priced es
 `list_models` assume one standard 1K image; bigger or high-quality images cost several times more,
 and the first real result tells you the true price.
 
-## When it comes back
+Save it where the work belongs: `out_path` decides that. If the folder has its own conventions
+(its CLAUDE.md usually says), follow them.
 
-- Look before you show it. Read every image you made and judge it against what was asked. If it
-  misses, one targeted retry — it counts toward the spend.
-- Save it where the work belongs. If the folder has its own conventions (its CLAUDE.md usually
-  says), follow them.
-- Tell the user, in their language, which model you used and what it cost. The tool reports the
-  charge; if it says the charge wasn't reported, say that rather than guess.
+## Check it before you show it
+
+A result that misses the brief costs the user twice: they pay for it, then have to spot the
+problem themselves. So judge every result first.
+
+- **Images**: open each file and hold it against what was asked — subject, composition, style,
+  aspect ratio, lettering spelled exactly right, a transparent background if one was needed, and
+  the usual flaws (extra fingers, melted details, garbled text). SVG comes back as text; read it.
+- **Music and speech**: you can't hear them, so check what you can: the file is there and runs
+  about as long as asked (`afinfo` on macOS, `ffprobe` elsewhere), and any lyrics or transcript
+  that came back match the words and language asked for. Tell the user you haven't listened to it.
+- **Video**: if `ffmpeg` is there, pull a few frames and look at them. A retry is a new video,
+  so it needs the user's yes like any other.
+
+When it misses, work out why before trying again — usually the prompt: vague, contradictory, or
+not written the way this model wants. Fix that, then regenerate. Up to two retries per item
+without asking; each one costs money and counts toward the thresholds above. If the third try
+still misses, show the best one, say what is still off, and let the user decide. Retries land
+beside the first as name-2, name-3; say which file is the one to use.
+
+## Report
+
+Tell the user, in their language, which model you used, how many tries it took, and the total cost
+of all of them. The tool reports each charge; if it says a charge wasn't reported, say that rather
+than guess.
 
 ## When it isn't set up
 

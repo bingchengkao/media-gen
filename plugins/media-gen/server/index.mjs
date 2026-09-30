@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.2.0' };
+const SERVER = { name: 'media-gen', version: '0.2.1' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -25,6 +25,10 @@ const TOP_QUALITY_FACTOR = 5;
 // Speech can be billed on the audio it makes. Guessed cautiously from the text: about 4 spoken
 // characters a second (a Chinese pace) at about 25 audio tokens a second.
 const AUDIO_TOKENS_PER_CHAR = 6.25;
+// Music is billed on the audio it makes, or at a flat price that only the model's description
+// gives. Guessed cautiously as a four-minute song at the same 25 audio tokens a second.
+const MUSIC_SECONDS = 240;
+const AUDIO_TOKENS_PER_SECOND = 25;
 const ASK_AT_COUNT = 8;
 const ASK_AT_USD = 1;
 
@@ -320,6 +324,19 @@ function estimateSpeechCost(model, characters) {
   return input * characters + output * characters * AUDIO_TOKENS_PER_CHAR;
 }
 
+// Some models give their price only in words, e.g. "Full-length songs are priced at $0.08 per song."
+const flatPrices = (description = '') =>
+  [...description.matchAll(/\$(\d+(?:\.\d+)?) per (song|clip|track|generation|request)\b/gi)].map((m) => ({ usd: Number(m[1]), per: m[2] }));
+
+function estimateMusicCost(model, characters) {
+  const input = Number(model?.pricing?.prompt) || 0;
+  const output = Number(model?.pricing?.audio_output ?? model?.pricing?.completion) || 0;
+  const flat = flatPrices(model?.description);
+  if (!input && !output && !flat.length) return undefined;
+  const made = Math.max(output * MUSIC_SECONDS * AUDIO_TOKENS_PER_SECOND, ...flat.map((p) => p.usd));
+  return input * characters + made;
+}
+
 const describeParams = (params = {}) =>
   Object.entries(params)
     .map(([k, v]) => `${k}: ${v.type === 'enum' ? v.values.join('|') : v.type === 'range' ? `${v.min}-${v.max}` : v.type ?? ''}`)
@@ -391,12 +408,13 @@ async function listModels({ kind, match }) {
       .sort(newestFirst)
       .map((m) => {
         const voices = m.supported_voices ?? [];
+        const flat = flatPrices(m.description);
         return compact({
           id: m.id,
           name: m.name,
           released: day(m.created),
           about: about(m.description),
-          price: describeRates(m.pricing),
+          price: flat.length ? flat.map((p) => `$${p.usd} per ${p.per}`).join('; ') : describeRates(m.pricing),
           voices: voices.length ? `${voices.slice(0, 12).join(', ')}${voices.length > 12 ? ` (+${voices.length - 12} more)` : ''}` : undefined,
         });
       });
@@ -476,20 +494,22 @@ async function generateImage(a) {
 
 // ── Speech ──────────────────────────────────────────────────────────────────────────────────────
 
-const speechModels = new Map();
+// The speech and music catalogues, fetched once each: they carry the prices the estimates need.
+const catalogues = new Map();
 
-async function speechModel(id) {
-  if (!speechModels.size) {
-    const { data } = await getJson('/models?output_modalities=speech', { auth: false });
-    for (const m of data) speechModels.set(m.id, m);
+function catalogueModel(modality, id) {
+  if (!catalogues.has(modality)) {
+    const pending = getJson(`/models?output_modalities=${modality}`, { auth: false }).then(({ data }) => new Map(data.map((m) => [m.id, m])));
+    pending.catch(() => catalogues.delete(modality));
+    catalogues.set(modality, pending);
   }
-  return speechModels.get(id);
+  return catalogues.get(modality).then((models) => models.get(id));
 }
 
 async function generateSpeech(a) {
   const outPath = await prepareOut(a.out_path);
   if (typeof a.text !== 'string' || !a.text.trim()) throw new ToolError('text is required: the words to speak.');
-  const estimate = estimateSpeechCost(await speechModel(a.model).catch(() => undefined), a.text.length);
+  const estimate = estimateSpeechCost(await catalogueModel('speech', a.model).catch(() => undefined), a.text.length);
   if (a.user_approved !== true && estimate != null && estimate >= ASK_AT_USD) throw mustAsk('This speech', estimate);
 
   let references;
@@ -596,6 +616,9 @@ async function readChat(res) {
 
 async function generateMusic(a) {
   const outPath = await prepareOut(a.out_path);
+  if (typeof a.prompt !== 'string' || !a.prompt.trim()) throw new ToolError('prompt is required: the music to make.');
+  const estimate = estimateMusicCost(await catalogueModel('audio', a.model).catch(() => undefined), a.prompt.length);
+  if (a.user_approved !== true && estimate != null && estimate >= ASK_AT_USD) throw mustAsk('This music', estimate);
   const content = a.references?.length ? [{ type: 'text', text: a.prompt }, ...(await imageParts(a.references))] : a.prompt;
   const res = await request('POST', '/chat/completions', {
     body: compact({
@@ -715,7 +738,7 @@ const TOOLS = [
     name: 'list_models',
     description:
       'List the OpenRouter models that make one kind of media right now, newest first, with prices and options. ' +
-      "Free: needs no key and spends nothing. Speech 'prompt' prices are per input character for most models; music prices are in 'about'.",
+      "Free: needs no key and spends nothing. Speech 'prompt' prices are per input character for most models; a music price that reads 'see about' is in 'about'.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -761,6 +784,7 @@ const TOOLS = [
         out_path: outPath,
         format: str("Audio format to ask for, e.g. 'mp3' or 'wav', if the model takes one."),
         references: { type: 'array', items: { type: 'string' }, description: 'Images to draw the mood from: local paths or URLs.' },
+        user_approved: approved(`for an estimated US$${ASK_AT_USD}+`),
         extra,
       },
       required: ['model', 'prompt', 'out_path'],

@@ -87,6 +87,15 @@ check('reference images: counted in the estimate', asks(references), text(refere
 const narration = await call('generate_speech', { model: 'bytedance-seed/seed-audio-1-0', text: 'x'.repeat(400), out_path: out });
 check('speech billed on output: counted in the estimate', asks(narration), text(narration).slice(0, 100));
 
+const lyria = JSON.parse(text(await call('list_models', { kind: 'music', match: 'lyria' })));
+check('music priced only in words: read from the description', lyria.length > 0 && lyria.every((r) => / per (song|clip)/.test(r.price)), lyria.map((r) => r.price).join(', '));
+
+const song = await call('generate_music', { model: 'google/lyria-3-pro-preview', prompt: 'x', out_path: out });
+check('music under US$1: no ask, straight to the key', song.isError && /MEDIA_GEN_API_KEY is not set/.test(text(song)));
+
+const longSong = await call('generate_music', { model: 'openai/gpt-audio', prompt: 'x'.repeat(400_000), out_path: out });
+check('music billed on tokens: counted in the estimate', asks(longSong), text(longSong).slice(0, 100));
+
 const video = await call('generate_video', { model: 'google/veo-3.1-lite', prompt: 'x', user_approved: false });
 check('video: asks every time', video.isError && /Every video needs/.test(text(video)));
 
