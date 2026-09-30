@@ -10,7 +10,8 @@ A Claude Code plugin that makes images, music, speech and video through
 - **It picks the model.** OpenRouter adds new models every month, so Claude checks what is there
   today, prefers the Nano Banana and FLUX families for images, and reads the chosen model's guide
   before prompting it.
-- **Claude never sees your key.** It lives in your system keychain and only goes to openrouter.ai.
+- **One place for the key**: the environment variable `MEDIA_GEN_API_KEY`. It only ever goes to
+  openrouter.ai; the tools never show it back.
 
 ## Install
 
@@ -27,39 +28,35 @@ Needs Node 18 or newer on your `PATH`.
    A key on an empty account is refused.
 2. Make a key at <https://openrouter.ai/settings/keys>. Give it a **spend limit** (US$5 is plenty to
    start): if anything goes wrong, it stops there.
-3. Choose where to keep it:
+3. Put it in the environment variable `MEDIA_GEN_API_KEY`, wherever your agent takes its
+   environment from:
+   - **Claude Code**, terminal or desktop app: add it to `~/.claude/settings.json`. The desktop app
+     does not read shell profiles, so this is the place that covers both:
 
-   | | Plugin settings | Environment variable |
-   |---|---|---|
-   | Where the key lives | your system keychain | a plain-text file, e.g. `~/.zshenv` |
-   | Can the model read it | no | technically yes |
-   | Works in | Claude Code only | any agent that runs the server |
+     ```json
+     {
+       "env": {
+         "MEDIA_GEN_API_KEY": "sk-or-v1-..."
+       }
+     }
+     ```
 
-   **Plugin settings.** In a terminal Claude Code session, `/plugin configure media-gen@media-gen`
-   and paste it. Or from any terminal (the desktop app has one built in), with the key copied to
-   your clipboard, on macOS (the key itself never lands in your shell history):
+     If the file already has an `"env"` block, add the line inside it.
+   - **An agent started from a terminal**: `export MEDIA_GEN_API_KEY=sk-or-v1-...` in your shell
+     profile (`~/.zshenv` on macOS).
+   - **Any other agent**: its own setting for the environment of MCP servers.
 
-   ```bash
-   printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin
-   ```
-
-   At install time, `--config openrouter_api_key="$(pbpaste)"` on `claude plugin install` does the
-   same in one go.
-
-   **Environment variable.** Add `export OPENROUTER_API_KEY=...` to the shell profile your agent
-   starts from (`~/.zshenv` on macOS). An app opened from the Dock may not read shell profiles;
-   `launchctl setenv OPENROUTER_API_KEY ...` covers it until the next restart.
-
-   If both are set, the plugin settings win.
-4. Restart your agent (in Claude Code: restart, or `/reload-plugins`).
+   The key then sits in a plain-text file. That is the trade-off for one simple setup that works
+   everywhere; the spend limit from step 2 is what keeps it safe.
+4. Restart your agent.
 
 If you skip this, nothing breaks: the first time Claude tries to generate, the tool refuses, spends
-nothing, and Claude walks you through these steps, letting you pick between the two.
+nothing, and Claude walks you through these steps.
 
 ## Using it with another agent
 
 The server is plain MCP over stdio. Point your agent's MCP settings at
-`node <this repo>/plugins/media-gen/server/index.mjs`, with `OPENROUTER_API_KEY` in its environment.
+`node <this repo>/plugins/media-gen/server/index.mjs`, with `MEDIA_GEN_API_KEY` in its environment.
 `plugins/media-gen/skills/generate/SKILL.md` carries the rules (when to ask, what to report); give
 it to your agent the way it takes instructions.
 
@@ -68,7 +65,7 @@ it to your agent the way it takes instructions.
 | Part | What it does |
 |---|---|
 | `skills/generate/SKILL.md` | When to generate, when to ask first, how to choose a model, what to report. |
-| `server/index.mjs` | A small MCP server with no dependencies. It holds the key and talks to OpenRouter. |
+| `server/index.mjs` | A small MCP server with no dependencies. It reads the key and talks to OpenRouter. |
 
 Its tools: `list_models` (free, no key), `generate_image`, `generate_music`, `generate_speech`,
 `generate_video` + `video_status`, and `check_balance`. Files are never overwritten: a second

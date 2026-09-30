@@ -4,7 +4,7 @@
 //
 //   node scripts/smoke.mjs
 //
-// Runs with the key variables removed, so it can never spend money.
+// Runs with MEDIA_GEN_API_KEY removed, so it can never spend money.
 
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -16,8 +16,7 @@ const out = path.join(os.tmpdir(), 'media-gen-smoke', 'never.png');
 
 function start(extraEnv = {}) {
   const env = { ...process.env, ...extraEnv };
-  if (!('OPENROUTER_API_KEY' in extraEnv)) delete env.OPENROUTER_API_KEY;
-  delete env.MEDIA_GEN_OPENROUTER_API_KEY;
+  if (!('MEDIA_GEN_API_KEY' in extraEnv)) delete env.MEDIA_GEN_API_KEY;
   const child = spawn('node', [path.join(root, 'plugins/media-gen/server/index.mjs')], { env, stdio: ['pipe', 'pipe', 'inherit'] });
   const waiting = new Map();
   let buffered = '';
@@ -66,7 +65,7 @@ const text = (result) => result.content[0].text;
 const asks = (result) => result.isError && /needs the user's yes/.test(text(result));
 
 const noKey = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out });
-check('no key: refuses before spending', noKey.isError && /No OpenRouter API key/.test(text(noKey)));
+check('no key: refuses before spending', noKey.isError && /MEDIA_GEN_API_KEY is not set/.test(text(noKey)));
 
 const badFolder = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: '/no-such-root/x.png' });
 check('unwritable out_path: refuses before spending', badFolder.isError && /Nothing was generated or spent/.test(text(badFolder)));
@@ -92,14 +91,14 @@ const video = await call('generate_video', { model: 'google/veo-3.1-lite', promp
 check('video: asks every time', video.isError && /Every video needs/.test(text(video)));
 
 const fake = 'sk-or-v1-fake0000' + '\n' + 'secondline';
-const broken = start({ OPENROUTER_API_KEY: fake });
+const broken = start({ MEDIA_GEN_API_KEY: fake });
 await broken.rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'smoke', version: '0' } });
 const garbled = await broken.call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out });
 check('garbled key: refused without quoting it', garbled.isError && /never has/.test(text(garbled)) && !text(garbled).includes('fake0000'));
 broken.child.kill();
 
 const balance = await call('check_balance', {});
-check('balance without key: says so', balance.isError && /No OpenRouter API key/.test(balance.content[0].text));
+check('balance without key: says so', balance.isError && /MEDIA_GEN_API_KEY is not set/.test(balance.content[0].text));
 
 const unknown = await rpc('no/such/method');
 check('unknown method: JSON-RPC error', unknown.error?.code === -32601);

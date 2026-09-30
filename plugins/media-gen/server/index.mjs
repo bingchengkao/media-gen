@@ -4,16 +4,16 @@
 // No dependencies: Node 18+ (global fetch). It speaks MCP over stdio — JSON-RPC 2.0, one message
 // per line — so stdout carries protocol messages only.
 //
-// The API key comes from the environment. The plugin's settings dialog keeps it in the system
-// keychain and Claude Code hands it in as MEDIA_GEN_OPENROUTER_API_KEY; OPENROUTER_API_KEY is the
-// fallback. The key goes to openrouter.ai and nowhere else: never into a result, never onto disk.
+// The API key comes from one environment variable, MEDIA_GEN_API_KEY, which the user sets wherever
+// their agent reads its environment. It goes to openrouter.ai and nowhere else: never into a
+// result, never onto disk.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.1.3' };
+const SERVER = { name: 'media-gen', version: '0.2.0' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -39,49 +39,39 @@ const compact = (obj) =>
 
 // ── Key ─────────────────────────────────────────────────────────────────────────────────────────
 
+const KEY_VAR = 'MEDIA_GEN_API_KEY';
+
 const NO_KEY = [
-  'No OpenRouter API key is set, so nothing was generated and nothing was spent.',
-  'Walk the user through setting one up. They do every step themselves: never ask for the key in the chat, and do not run these commands for them.',
+  `${KEY_VAR} is not set, so nothing was generated and nothing was spent.`,
+  'Walk the user through setting it up. They do every step themselves: never ask for the key in the chat, and do not edit their files or run commands for them.',
   '1. Sign in at https://openrouter.ai and add credit at https://openrouter.ai/settings/credits (a key on an empty account is refused).',
   '2. Make a key just for this at https://openrouter.ai/settings/keys and give it a spend limit, e.g. US$5.',
-  '3. Let the user choose where to keep it:',
-  "   a. Claude Code's plugin settings: kept in the system keychain, out of the model's reach, but only Claude Code has them.",
-  '      In a terminal Claude Code session: /plugin configure media-gen@media-gen',
-  '      Or from any terminal, with the key copied to the clipboard (macOS):',
-  `      printf '{"openrouter_api_key":"%s"}' "$(pbpaste)" | claude plugin configure media-gen@media-gen --values-stdin`,
-  '   b. An environment variable, OPENROUTER_API_KEY: works with any agent that runs this server, but the key sits in a plain-text',
-  '      file the model could read. The line `export OPENROUTER_API_KEY=...` goes in the shell profile the agent starts from',
-  '      (e.g. ~/.zshenv). An app opened from the Dock on macOS may not read it; `launchctl setenv` covers that until the next restart.',
-  '   Outside Claude Code only (b) exists. If both are set, (a) wins.',
-  '4. Restart the agent (in Claude Code: restart, or /reload-plugins).',
+  `3. Put it in the environment variable ${KEY_VAR}, wherever the agent running this server takes its environment from:`,
+  `   - Claude Code, terminal or desktop app: ~/.claude/settings.json, "env": { "${KEY_VAR}": "<the key>" }. The desktop app does not read shell profiles.`,
+  `   - An agent started from a terminal: export ${KEY_VAR}=<the key> in the shell profile, e.g. ~/.zshenv.`,
+  '   - Any other agent: its own setting for the environment of MCP servers.',
+  '   The key then sits in a plain-text file; that is the trade-off of this setup.',
+  '4. Restart the agent.',
 ].join('\n');
 
-const KEY_VARS = ['MEDIA_GEN_OPENROUTER_API_KEY', 'OPENROUTER_API_KEY'];
-
 function apiKey() {
-  for (const name of KEY_VARS) {
-    const value = process.env[name]?.trim();
-    // An option the user never filled in can arrive empty, or as the unexpanded placeholder.
-    if (!value || value.includes('${')) continue;
-    // A key is one run of printable characters. Anything else would make fetch throw an error
-    // that quotes the whole header, key included.
-    if (!/^[\x21-\x7e]+$/.test(value)) {
-      throw new ToolError(
-        'The saved OpenRouter key has spaces, line breaks or other characters a key never has, so nothing was sent or spent. ' +
-          "The user pastes it again in this plugin's settings.",
-      );
-    }
-    return value;
+  const value = process.env[KEY_VAR]?.trim();
+  if (!value) throw new ToolError(NO_KEY);
+  // A key is one run of printable characters. Anything else would make fetch throw an error that
+  // quotes the whole header, key included.
+  if (!/^[\x21-\x7e]+$/.test(value)) {
+    throw new ToolError(
+      `${KEY_VAR} has spaces, line breaks or other characters a key never has, so nothing was sent or spent. ` +
+        'The user sets it again, with the key alone.',
+    );
   }
-  throw new ToolError(NO_KEY);
+  return value;
 }
 
 // Last line of defence: whatever goes back to the model, the key is not in it.
 function redact(text) {
-  for (const name of KEY_VARS) {
-    const value = process.env[name]?.trim();
-    if (value && value.length >= 8) text = text.split(value).join('[key]');
-  }
+  const value = process.env[KEY_VAR]?.trim();
+  if (value && value.length >= 8) text = text.split(value).join('[key]');
   return text.replace(/sk-or-[\w-]{8,}/g, '[key]');
 }
 
@@ -89,7 +79,7 @@ function redact(text) {
 
 const STATUS_HINTS = {
   400: "A field or value this model does not accept. Check https://openrouter.ai/<model id>/llms.txt and retry.",
-  401: 'The key was refused. The user replaces it wherever they keep it: the plugin settings (/plugin configure media-gen@media-gen) or OPENROUTER_API_KEY.',
+  401: `The key was refused. The user checks ${KEY_VAR}: the whole key, not revoked (https://openrouter.ai/settings/keys).`,
   402: 'The account is out of credit. The user adds credit at https://openrouter.ai/settings/credits.',
   403: 'The key hit its spend limit or is disabled. Raising the limit is the user\'s call.',
   404: 'Unknown model, or no provider can serve this request right now.',
