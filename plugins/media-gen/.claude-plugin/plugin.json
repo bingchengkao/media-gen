@@ -1,0 +1,28 @@
+{
+  "name": "media-gen",
+  "version": "0.1.0",
+  "description": "Generate images, music, speech and video through OpenRouter on your own key. Asks before it starts spending, and tells you what each generation cost.",
+  "author": {
+    "name": "bingchengkao",
+    "email": "bingchengkao@gmail.com"
+  },
+  "keywords": ["image", "music", "speech", "video", "generation", "openrouter"],
+  "userConfig": {
+    "openrouter_api_key": {
+      "type": "string",
+      "title": "OpenRouter API key",
+      "description": "From https://openrouter.ai/settings/keys. Kept in your system keychain; Claude never sees it. Safest: a key made just for this, with a spend limit.",
+      "sensitive": true,
+      "default": ""
+    }
+  },
+  "mcpServers": {
+    "media-gen": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/index.mjs"],
+      "env": {
+        "MEDIA_GEN_OPENROUTER_API_KEY": "${user_config.openrouter_api_key}"
+      }
+    }
+  }
+}

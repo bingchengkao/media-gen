@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "media-gen",
+  "description": "Generate images, music, speech and video through OpenRouter on your own key.",
+  "owner": {
+    "name": "bingchengkao",
+    "email": "bingchengkao@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "media-gen",
+      "source": "./plugins/media-gen",
+      "description": "Generate images, music, speech and video through OpenRouter on your own key. Asks before it starts spending, and tells you what each generation cost.",
+      "category": "productivity",
+      "keywords": ["image", "music", "speech", "video", "generation", "openrouter"]
+    }
+  ]
+}
