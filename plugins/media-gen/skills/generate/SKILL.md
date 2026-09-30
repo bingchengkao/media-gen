@@ -46,8 +46,7 @@ and the first real result tells you the true price.
 - Save it where the work belongs. If the folder has its own conventions (its CLAUDE.md usually
   says), follow them.
 - Tell the user, in their language, which model you used and what it cost. The tool reports the
-  charge; if it says the charge wasn't reported, say that rather than guess. If the key is running
-  low, say that too.
+  charge; if it says the charge wasn't reported, say that rather than guess.
 
 ## When the key is missing or refused
 

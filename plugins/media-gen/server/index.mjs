@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.1.0' };
+const SERVER = { name: 'media-gen', version: '0.1.1' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -227,19 +227,14 @@ const imageParts = async (refs = []) =>
 
 // ── Money ───────────────────────────────────────────────────────────────────────────────────────
 
-async function keyStatus({ strict = false } = {}) {
-  try {
-    const { data } = await getJson('/key');
-    return compact({
-      spent_usd_all_time: round(data.usage),
-      spent_usd_today: round(data.usage_daily),
-      limit_usd: data.limit ?? 'none set',
-      remaining_usd: round(data.limit_remaining),
-    });
-  } catch (error) {
-    if (strict) throw error;
-    return undefined;
-  }
+async function keyStatus() {
+  const { data } = await getJson('/key');
+  return compact({
+    spent_usd_all_time: round(data.usage),
+    spent_usd_today: round(data.usage_daily),
+    limit_usd: data.limit ?? 'none set',
+    remaining_usd: round(data.limit_remaining),
+  });
 }
 
 // Speech answers with bare audio, so its charge is looked up afterwards; the record can lag.
@@ -255,12 +250,12 @@ async function generationCost(id) {
   return undefined;
 }
 
-async function report({ model, files, cost, notes }) {
+// No balance here: the key's totals lag behind a fresh charge, so right after one they read high.
+function report({ model, files, cost, notes }) {
   return compact({
     model,
     files,
     cost_usd: cost == null ? 'not reported by OpenRouter' : round(cost),
-    key: await keyStatus(),
     notes,
   });
 }
@@ -836,9 +831,11 @@ const TOOLS = [
   },
   {
     name: 'check_balance',
-    description: "How much the user's OpenRouter key has spent and how much of its limit is left. Free.",
+    description:
+      "How much the user's OpenRouter key has spent and how much of its limit is left. Free. " +
+      'The totals can take a few minutes to include the latest generations.',
     inputSchema: { type: 'object', properties: {} },
-    run: () => keyStatus({ strict: true }),
+    run: keyStatus,
   },
 ];
 

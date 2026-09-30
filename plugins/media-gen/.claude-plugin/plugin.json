@@ -1,6 +1,6 @@
 {
   "name": "media-gen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate images, music, speech and video through OpenRouter on your own key. Asks before it starts spending, and tells you what each generation cost.",
   "author": {
     "name": "bingchengkao",
