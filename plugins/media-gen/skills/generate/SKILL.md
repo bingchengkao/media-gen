@@ -39,8 +39,9 @@ says to prompt it. Write the prompt the way that model wants it. Token-priced es
 `list_models` assume one standard 1K image; bigger or high-quality images cost several times more,
 and the first real result tells you the true price.
 
-Save it where the work belongs: `out_path` decides that. If the folder has its own conventions
-(its CLAUDE.md usually says), follow them.
+Save it where the work belongs: `out_path` decides that. Give it as an absolute path — a relative
+one is read from wherever the agent started the server, which may not be the project. If the folder
+has its own conventions (its CLAUDE.md or AGENTS.md usually says), follow them.
 
 ## Check it before you show it
 
@@ -76,4 +77,8 @@ than guess.
   paste the key into the chat.
 - **The `media-gen` tools aren't there at all**: the plugin's server didn't start. The usual cause
   is that Node.js (18 or newer) isn't installed; after installing it from nodejs.org, the user
-  restarts Claude Code.
+  restarts the agent.
+- **A call timed out or failed with no result**: don't assume nothing was spent. The server may
+  have finished and saved the file after the agent stopped waiting, so look at `out_path` first,
+  then `check_balance` (its totals can lag a few minutes). Regenerate only when the file isn't
+  there, and count what was charged.

@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.2.1' };
+const SERVER = { name: 'media-gen', version: '0.2.2' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -53,6 +53,7 @@ const NO_KEY = [
   `3. Put it in the environment variable ${KEY_VAR}, wherever the agent running this server takes its environment from:`,
   `   - Claude Code, terminal or desktop app: ~/.claude/settings.json, "env": { "${KEY_VAR}": "<the key>" }. The desktop app does not read shell profiles.`,
   `   - An agent started from a terminal: export ${KEY_VAR}=<the key> in the shell profile, e.g. ~/.zshenv.`,
+  `   - Codex: it does not pass the shell environment on by itself. Also add env_vars = ["${KEY_VAR}"] to this server's [mcp_servers.<name>] table in ~/.codex/config.toml.`,
   '   - Any other agent: its own setting for the environment of MCP servers.',
   '   The key then sits in a plain-text file; that is the trade-off of this setup.',
   '4. Restart the agent.',

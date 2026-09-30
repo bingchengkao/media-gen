@@ -52,6 +52,8 @@ Needs Node 18 or newer on your `PATH`.
      If the file already has an `"env"` block, add the line inside it.
    - **An agent started from a terminal**: `export MEDIA_GEN_API_KEY=sk-or-v1-...` in your shell
      profile (`~/.zshenv` on macOS).
+   - **Codex**: it does not pass your shell environment to MCP servers on its own. Export the key in
+     your shell profile as above, and list it in `env_vars` (see below).
    - **Any other agent**: its own setting for the environment of MCP servers.
 
    The key then sits in a plain-text file. That is the trade-off for one simple setup that works
@@ -65,8 +67,22 @@ nothing, and Claude walks you through these steps.
 
 The server is plain MCP over stdio. Point your agent's MCP settings at
 `node <this repo>/plugins/media-gen/server/index.mjs`, with `MEDIA_GEN_API_KEY` in its environment.
-`plugins/media-gen/skills/generate/SKILL.md` carries the rules (when to ask, what to report); give
-it to your agent the way it takes instructions.
+`plugins/media-gen/skills/generate/SKILL.md` carries the rules (when to ask, what to report). It is
+a standard Agent Skills file, so agents that read `SKILL.md` (Codex, Gemini CLI, Cursor, …) can
+take it as it is; otherwise give it to your agent the way it takes instructions.
+
+Give tools room to finish. A whole song or a batch of large images can take over a minute, and a
+video check can wait up to ten. An agent that gives up sooner reports a failure after OpenRouter has
+already charged for the result, and may pay for it twice by retrying. For Codex, in
+`~/.codex/config.toml`:
+
+```toml
+[mcp_servers.media-gen]
+command = "node"
+args = ["/absolute/path/to/media-gen/plugins/media-gen/server/index.mjs"]
+env_vars = ["MEDIA_GEN_API_KEY"]
+tool_timeout_sec = 600
+```
 
 ## What is inside
 
