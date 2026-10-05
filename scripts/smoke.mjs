@@ -70,17 +70,20 @@ check('no key: refuses before spending', noKey.isError && /MEDIA_GEN_API_KEY is 
 const badFolder = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: '/no-such-root/x.png' });
 check('unwritable out_path: refuses before spending', badFolder.isError && /Nothing was generated or spent/.test(text(badFolder)));
 
-const tooMany = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out, count: 8 });
-check('8 images: asks first', asks(tooMany), text(tooMany).slice(0, 100));
+const underCount = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out, count: 11 });
+check('11 cheap images: no ask, straight to the key', underCount.isError && /MEDIA_GEN_API_KEY is not set/.test(text(underCount)));
 
-const approvedAsString = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out, count: 8, user_approved: 'true' });
+const tooMany = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out, count: 12 });
+check('12 images: asks first', asks(tooMany), text(tooMany).slice(0, 100));
+
+const approvedAsString = await call('generate_image', { model: 'google/gemini-3.1-flash-image', prompt: 'x', out_path: out, count: 12, user_approved: 'true' });
 check("'true' as a string is not a yes", asks(approvedAsString));
 
 const topQuality = await call('generate_image', { model: 'openai/gpt-image-1', prompt: 'x', out_path: out, count: 7 });
 check('quality left unset on a model that has one: counted as its dearest', asks(topQuality), text(topQuality).slice(0, 100));
 
 const references = await call('generate_image', {
-  model: 'sourceful/riverflow-v2-pro', prompt: 'x', out_path: out, resolution: '4K', references: ['a.png', 'b.png', 'c.png', 'd.png', 'e.png'],
+  model: 'sourceful/riverflow-v2-pro', prompt: 'x', out_path: out, resolution: '4K', references: ['a.png', 'b.png', 'c.png', 'd.png', 'e.png', 'f.png', 'g.png'],
 });
 check('reference images: counted in the estimate', asks(references), text(references).slice(0, 100));
 
@@ -91,9 +94,9 @@ const lyria = JSON.parse(text(await call('list_models', { kind: 'music', match: 
 check('music priced only in words: read from the description', lyria.length > 0 && lyria.every((r) => / per (song|clip)/.test(r.price)), lyria.map((r) => r.price).join(', '));
 
 const song = await call('generate_music', { model: 'google/lyria-3-pro-preview', prompt: 'x', out_path: out });
-check('music under US$1: no ask, straight to the key', song.isError && /MEDIA_GEN_API_KEY is not set/.test(text(song)));
+check('music under US$1.5: no ask, straight to the key', song.isError && /MEDIA_GEN_API_KEY is not set/.test(text(song)));
 
-const longSong = await call('generate_music', { model: 'openai/gpt-audio', prompt: 'x'.repeat(400_000), out_path: out });
+const longSong = await call('generate_music', { model: 'openai/gpt-audio', prompt: 'x'.repeat(500_000), out_path: out });
 check('music billed on tokens: counted in the estimate', asks(longSong), text(longSong).slice(0, 100));
 
 const video = await call('generate_video', { model: 'google/veo-3.1-lite', prompt: 'x', user_approved: false });

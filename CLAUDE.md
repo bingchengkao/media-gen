@@ -11,8 +11,9 @@ Why it exists and every decision behind it: the `web-animation-skills` repo, tic
 
 ## Rules that are the user's, not ours to soften
 
-- The first generation in a conversation waits for the user's yes. After that, ask only at 8+ items
-  in one request or an estimated US$1+.
+- The first generation in a conversation waits for the user's yes. After that, ask only at 12+ items
+  in one request or an estimated US$1.5+ (raised from 8 and US$1 on 2026-10-05, so a round of
+  exploring directions fits under it).
 - Video: never offered unless the user brought it up; a yes before every single video.
 - After every generation: which model, what it cost.
 - The key never reaches the model: not in a tool result, not in an error, not on disk.

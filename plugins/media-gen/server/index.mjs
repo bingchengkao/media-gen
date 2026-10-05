@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline';
 
-const SERVER = { name: 'media-gen', version: '0.2.2' };
+const SERVER = { name: 'media-gen', version: '0.2.3' };
 const API = 'https://openrouter.ai/api/v1';
 const PROTOCOL = '2025-06-18';
 
@@ -29,8 +29,8 @@ const AUDIO_TOKENS_PER_CHAR = 6.25;
 // gives. Guessed cautiously as a four-minute song at the same 25 audio tokens a second.
 const MUSIC_SECONDS = 240;
 const AUDIO_TOKENS_PER_SECOND = 25;
-const ASK_AT_COUNT = 8;
-const ASK_AT_USD = 1;
+const ASK_AT_COUNT = 12;
+const ASK_AT_USD = 1.5;
 
 class ToolError extends Error {}
 

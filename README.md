@@ -4,11 +4,14 @@ A Claude Code plugin that makes images, music, speech and video through
 [OpenRouter](https://openrouter.ai), on your own key.
 
 - **It asks before it starts spending.** The first generation in each conversation waits for your
-  yes. After that it only asks when one request makes 8 or more items or looks like US$1 or more.
-  Video asks every single time, and Claude won't suggest video unless you bring it up.
+  yes. After that it only asks when one request makes 12 or more items or looks like US$1.5 or
+  more. Video asks every single time, and Claude won't suggest video unless you bring it up.
 - **It checks its own work.** Claude looks at every image against what you asked and redoes the
   ones that miss, up to two retries, before showing you anything. Music and speech it can't hear,
   so it checks their length and any lyrics that came back, and says so.
+- **It explores with more than one model.** When you want a few directions to choose between,
+  Claude tries the same brief on up to three models: each has its own taste, so the spread is wider
+  than rewording alone. Each file is named after its model.
 - **It tells you what each generation cost**, and which model made it, counting every retry.
 - **It picks the model.** OpenRouter adds new models every month, so Claude checks what is there
   today, prefers the Nano Banana and FLUX families for images, and reads the chosen model's guide

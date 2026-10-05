@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Make images, music, speech and video with today's best models on OpenRouter — Nano Banana, FLUX, Lyria and whatever is newest — saved straight into the project. Use this whenever the work would be better with real media than a placeholder, even if the user never says "generate" — a hero image or background for a page, sprites or textures for a game, a logo direction or mood picture, a jingle or loop for an animation, a voice-over or narration (生圖、畫一張、配樂、做首歌、配音、旁白). It picks the right model for the job, checks every result against the brief and redoes the ones that miss, then says which model it used and what it cost. Spends the user's own OpenRouter credit, so it asks before the first generation. Video only when the user brings it up.
+description: Make images, music, speech and video with today's best models on OpenRouter — Nano Banana, FLUX, Lyria and whatever is newest — saved straight into the project. Use this whenever the work would be better with real media than a placeholder, even if the user never says "generate" — a hero image or background for a page, sprites or textures for a game, a few directions to choose between (logos, moods, styles), a jingle or loop for an animation, a voice-over or narration (生圖、畫一張、配樂、做首歌、配音、旁白). It picks the right model for the job, checks every result against the brief and redoes the ones that miss, then says which model it used and what it cost. Spends the user's own OpenRouter credit, so it asks before the first generation. Video only when the user brings it up.
 ---
 
 # Generate
@@ -13,8 +13,8 @@ never ask for it.
 
 - **The first generation in a conversation**: tell the user you are about to start generating with
   the paid API, and wait for a yes. You don't need to say which model.
-- **After that**, go ahead without asking — unless one request makes 8 or more items, or you
-  estimate it at US$1 or more. Then say how many, with which model, roughly what it costs, and wait.
+- **After that**, go ahead without asking — unless one request makes 12 or more items, or you
+  estimate it at US$1.5 or more. Then say how many, with which model, roughly what it costs, and wait.
 - **Video** is expensive and slow. Don't offer it unless the user brought video up. Before every
   video — every one, whatever they agreed to earlier — say the model, the length, the estimated
   cost and the wait, and get a yes.
@@ -42,6 +42,29 @@ and the first real result tells you the true price.
 Save it where the work belongs: `out_path` decides that. Give it as an absolute path — a relative
 one is read from wherever the agent started the server, which may not be the project. If the folder
 has its own conventions (its CLAUDE.md or AGENTS.md usually says), follow them.
+
+## Exploring directions
+
+While the direction is still open — the user wants references, mood pictures or styles to choose
+between, or another skill is putting roughs up — vary the model as well as the prompt. Each model
+has its own taste: the same brief comes back as a different picture from Nano Banana, from FLUX,
+from another maker's model, and the spread is often wider than rewording alone gets you. Once a
+direction is chosen, go back to one model for the final.
+
+- Use up to three models, from different makers; two versions of one family tend to look alike.
+  This is the time to step outside the usual families.
+- Keep the brief the same and write it the way each model wants it, so the differences come from
+  the model's taste, not from a prompt it reads badly.
+- Make 4 to 10 images in a round. How they split across models and prompts is your call; mix the
+  two levers rather than multiplying them — not every prompt on every model.
+- Explore small: standard size, default quality. Make the final at full size once a direction is
+  chosen.
+- The whole round is one request: count every image across every model toward the thresholds
+  above.
+- Name each file after its model (`mood-flux.png`) and say which model made which, so when the user
+  picks a direction they also pick the model to finish it with.
+- Judge each against the brief's hard requirements, but don't retry one just because it went
+  somewhere unexpected — that is what exploring is for. Drop a clear miss instead.
 
 ## Check it before you show it
 
