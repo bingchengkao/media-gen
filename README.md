@@ -10,12 +10,12 @@ A Claude Code plugin that makes images, music, speech and video through
   ones that miss, up to two retries, before showing you anything. Music and speech it can't hear,
   so it checks their length and any lyrics that came back, and says so.
 - **It explores with more than one model.** When you want a few directions to choose between,
-  Claude tries the same brief on up to three models: each has its own taste, so the spread is wider
-  than rewording alone. Each file is named after its model.
+  Claude tries the same brief on up to three models: each draws in its own way — light, texture,
+  finish — which rewording alone moves only a little. Each file is named after its model.
 - **It tells you what each generation cost**, and which model made it, counting every retry.
 - **It picks the model.** OpenRouter adds new models every month, so Claude checks what is there
-  today, prefers the Nano Banana and FLUX families for images, and reads the chosen model's guide
-  before prompting it.
+  today, prefers the Nano Banana, GPT Image and FLUX families for images, and reads the chosen
+  model's guide before prompting it.
 - **One place for the key**: the environment variable `MEDIA_GEN_API_KEY`. It only ever goes to
   openrouter.ai; the tools never show it back.
 

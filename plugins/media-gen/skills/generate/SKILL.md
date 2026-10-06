@@ -1,6 +1,6 @@
 ---
 name: generate
-description: Make images, music, speech and video with today's best models on OpenRouter — Nano Banana, FLUX, Lyria and whatever is newest — saved straight into the project. Use this whenever the work would be better with real media than a placeholder, even if the user never says "generate" — a hero image or background for a page, sprites or textures for a game, a few directions to choose between (logos, moods, styles), a jingle or loop for an animation, a voice-over or narration (生圖、畫一張、配樂、做首歌、配音、旁白). It picks the right model for the job, checks every result against the brief and redoes the ones that miss, then says which model it used and what it cost. Spends the user's own OpenRouter credit, so it asks before the first generation. Video only when the user brings it up.
+description: Make images, music, speech and video with today's best models on OpenRouter — Nano Banana, GPT Image, FLUX, Lyria and whatever is newest — saved straight into the project. Use this whenever the work would be better with real media than a placeholder, even if the user never says "generate" — a hero image or background for a page, sprites or textures for a game, a few directions to choose between (logos, moods, styles), a jingle or loop for an animation, a voice-over or narration (生圖、畫一張、配樂、做首歌、配音、旁白). It picks the right model for the job, checks every result against the brief and redoes the ones that miss, then says which model it used and what it cost. Spends the user's own OpenRouter credit, so it asks before the first generation. Video only when the user brings it up.
 ---
 
 # Generate
@@ -26,9 +26,10 @@ These hold whoever asked for the generation: the user, or another skill working 
 New models come out every month, so don't trust names you remember. Call `list_models` for the
 medium and choose from what is there today. The choice is yours; you don't need the user's approval.
 
-- **Images**: look first in the Nano Banana (Google's Gemini image models) and FLUX (Black Forest
-  Labs) families, and take the newest that fits the job. Step outside them when the job needs what
-  they can't do — a transparent background, SVG output, lettering they keep getting wrong.
+- **Images**: look first in the Nano Banana (Google's Gemini image models), GPT Image (OpenAI) and
+  FLUX (Black Forest Labs) families, and take the newest that fits the job. Not every version offers
+  a transparent background; check the model's options. Step outside the three when the job needs
+  what they can't do — SVG output, or lettering they keep getting wrong.
 - **Music**: a short clip for a loop or a sting, a full-song model for a whole song.
 - **Speech**: make sure the voice speaks the language of the text.
 - **Video**: check the durations, resolutions and price per second before you pick.
@@ -47,9 +48,13 @@ has its own conventions (its CLAUDE.md or AGENTS.md usually says), follow them.
 
 While the direction is still open — the user wants references, mood pictures or styles to choose
 between, or another skill is putting roughs up — vary the model as well as the prompt. Each model
-has its own taste: the same brief comes back as a different picture from Nano Banana, from FLUX,
-from another maker's model, and the spread is often wider than rewording alone gets you. Once a
-direction is chosen, go back to one model for the final.
+has its own taste: the same brief comes back as a different picture from Nano Banana, from GPT
+Image, from FLUX, from another maker's model. Rewording mostly changes what is in the picture;
+switching models also changes how it is drawn — light, texture, finish — which words alone move
+only a little. FLUX, for one, tends to follow a detailed brief less closely than Nano Banana or GPT
+Image, but often comes back more beautiful and less obviously made by AI. (So it stood in October
+2026. Newer versions may differ; what you see in the results outranks this note.) Once a direction
+is chosen, go back to one model for the final.
 
 - Use up to three models, from different makers; two versions of one family tend to look alike.
   This is the time to step outside the usual families.
